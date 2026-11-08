@@ -1,0 +1,2072 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:alpr:contract:v1",
+  "title": "ALPR contract v1 — record union",
+  "description": "Definitions are normative; relational invariants require implementation in acceptance suite.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Sample"
+    },
+    {
+      "$ref": "#/$defs/SplitManifest"
+    },
+    {
+      "$ref": "#/$defs/DetectorLabel"
+    },
+    {
+      "$ref": "#/$defs/OCRCrop"
+    },
+    {
+      "$ref": "#/$defs/Charset"
+    },
+    {
+      "$ref": "#/$defs/DetectionPrediction"
+    },
+    {
+      "$ref": "#/$defs/OCRPrediction"
+    },
+    {
+      "$ref": "#/$defs/PipelineResult"
+    },
+    {
+      "$ref": "#/$defs/SourceManifest"
+    },
+    {
+      "$ref": "#/$defs/DataManifest"
+    },
+    {
+      "$ref": "#/$defs/ModelManifest"
+    },
+    {
+      "$ref": "#/$defs/RunManifest"
+    },
+    {
+      "$ref": "#/$defs/ReleaseManifest"
+    }
+  ],
+  "$defs": {
+    "Artifact": {
+      "type": "object",
+      "description": "Relative path, exact byte hash; no self-hash or cycles.",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "size_bytes",
+        "role"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "role": {
+          "enum": [
+            "runtime",
+            "train_label",
+            "dev_gold",
+            "test_gold",
+            "evidence",
+            "checkpoint",
+            "manifest"
+          ]
+        }
+      }
+    },
+    "Annotation": {
+      "type": "object",
+      "description": "Evaluator/trainer only. Pixel origin top-left; bbox half-open; corners original image coordinates.",
+      "additionalProperties": false,
+      "required": [
+        "bbox_xyxy",
+        "corners_rb_lb_lt_rt",
+        "raw_bbox_xyxy",
+        "plate_indices",
+        "plate_text_nfc",
+        "source_locator"
+      ],
+      "properties": {
+        "bbox_xyxy": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "corners_rb_lb_lt_rt": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "raw_bbox_xyxy": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "plate_indices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 7
+        },
+        "plate_text_nfc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_locator": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "Sample": {
+      "type": "object",
+      "description": "Canonical evaluator/training record. RuntimeImage never receives annotation or source locator.",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "sample_id",
+        "image_id",
+        "runtime_image_path",
+        "image_sha256",
+        "pixel_sha256",
+        "width_px",
+        "height_px",
+        "subset",
+        "split",
+        "dedup_group_id",
+        "annotation"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "alpr-contract-v1"
+        },
+        "sample_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runtime_image_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "pixel_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "width_px": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height_px": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "subset": {
+          "type": "string",
+          "minLength": 1
+        },
+        "split": {
+          "enum": [
+            "train",
+            "dev",
+            "test"
+          ]
+        },
+        "dedup_group_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "annotation": {
+          "$ref": "#/$defs/Annotation"
+        }
+      }
+    },
+    "SplitManifest": {
+      "type": "object",
+      "description": "Hash members by canonical JSON, stable sorting; finalized before crops.",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "protocol_version",
+        "data_version",
+        "seed",
+        "sampling_version",
+        "dedup_version",
+        "source_manifest_sha256",
+        "members",
+        "counts",
+        "membership_sha256",
+        "quarantine_count"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "alpr-contract-v1"
+        },
+        "protocol_version": {
+          "const": "alpr-custom-base-group-v1"
+        },
+        "data_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seed": {
+          "const": 42
+        },
+        "sampling_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dedup_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "members": {
+          "type": "object",
+          "description": "Disjoint sample IDs; each image/group/text in exactly one split.",
+          "additionalProperties": false,
+          "required": [
+            "train",
+            "dev",
+            "test"
+          ],
+          "properties": {
+            "train": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            },
+            "dev": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            },
+            "test": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            }
+          }
+        },
+        "counts": {
+          "type": "object",
+          "description": "Actual counts after QA.",
+          "additionalProperties": false,
+          "required": [
+            "train",
+            "dev",
+            "test"
+          ],
+          "properties": {
+            "train": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "dev": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "test": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "membership_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "quarantine_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "DetectorLabel": {
+      "type": "object",
+      "description": "YOLO normalized original image center/size; numeric labels only in training/evaluation.",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+        "image_id",
+        "split",
+        "class_id",
+        "bbox_cxcywh_norm",
+        "image_sha256"
+      ],
+      "properties": {
+        "sample_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "split": {
+          "enum": [
+            "train",
+            "dev",
+            "test"
+          ]
+        },
+        "class_id": {
+          "const": 0
+        },
+        "bbox_cxcywh_norm": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "image_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "OCRCrop": {
+      "type": "object",
+      "description": "Persisted train/evaluation crop; runtime crop omits label. GT detector hash null. Parent split must be inherited.",
+      "additionalProperties": false,
+      "required": [
+        "crop_id",
+        "sample_id",
+        "image_id",
+        "split",
+        "crop_kind",
+        "path",
+        "sha256",
+        "bbox_xyxy",
+        "parent_image_sha256",
+        "preprocess_version",
+        "detector_checkpoint_sha256",
+        "plate_text_nfc"
+      ],
+      "properties": {
+        "crop_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sample_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "split": {
+          "enum": [
+            "train",
+            "dev",
+            "test"
+          ]
+        },
+        "crop_kind": {
+          "enum": [
+            "gt_bbox",
+            "pred_bbox",
+            "oracle_gt_corners",
+            "pred_corners"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bbox_xyxy": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "parent_image_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "preprocess_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "detector_checkpoint_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "plate_text_nfc": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "Charset": {
+      "type": "object",
+      "description": "tokens[0]=<CTC_BLANK>; no sentinel O token; token hash canonical JSON array UTF-8 LF.",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "charset_version",
+        "normalization",
+        "blank_index",
+        "tokens",
+        "tokens_sha256",
+        "allowed_lengths"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "alpr-contract-v1"
+        },
+        "charset_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalization": {
+          "const": "NFC"
+        },
+        "blank_index": {
+          "const": 0
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 2,
+          "uniqueItems": true
+        },
+        "tokens_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "allowed_lengths": {
+          "type": "array",
+          "items": {
+            "enum": [
+              7,
+              8
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "DetectionPrediction": {
+      "type": "object",
+      "description": "Coordinates after undo letterbox in original-image px; score is uncalibrated object/class model score.",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+        "detection_id",
+        "class_id",
+        "bbox_xyxy",
+        "score",
+        "detector_checkpoint_sha256"
+      ],
+      "properties": {
+        "sample_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "detection_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "class_id": {
+          "const": 0
+        },
+        "bbox_xyxy": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "detector_checkpoint_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "OCRPrediction": {
+      "type": "object",
+      "description": "Confidence diagnostic only; not calibrated and never replaces exact/CER. Empty confidence null.",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+        "crop_id",
+        "text_nfc",
+        "confidence",
+        "confidence_kind",
+        "decoder_version",
+        "recognizer_checkpoint_sha256",
+        "charset_sha256",
+        "status"
+      ],
+      "properties": {
+        "sample_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "crop_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text_nfc": {
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confidence_kind": {
+          "const": "mean_greedy_nonblank_maxprob"
+        },
+        "decoder_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recognizer_checkpoint_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "charset_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "ocr_empty",
+            "ocr_error"
+          ]
+        }
+      }
+    },
+    "PipelineResult": {
+      "type": "object",
+      "description": "One record per image; all failures text=\"\". No ground truth field. low_confidence means all boxes below threshold.",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "sample_id",
+        "status",
+        "selected_detection",
+        "ocr",
+        "text_nfc",
+        "error_code",
+        "latency_ms",
+        "run_id"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "alpr-contract-v1"
+        },
+        "sample_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "low_confidence",
+            "no_detection",
+            "crop_error",
+            "ocr_empty",
+            "ocr_error",
+            "invalid_input",
+            "runtime_error"
+          ]
+        },
+        "selected_detection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DetectionPrediction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ocr": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OCRPrediction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text_nfc": {
+          "type": "string"
+        },
+        "error_code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "latency_ms": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "SourceManifest": {
+      "type": "object",
+      "description": "Template permits null; READY needs upstream revision/archive provenance/files.",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "manifest_version",
+        "status",
+        "created_at",
+        "dataset_version",
+        "upstream_url",
+        "upstream_commit",
+        "archive_url",
+        "archive_sha256",
+        "license_reference",
+        "files"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "alpr-contract-v1"
+        },
+        "manifest_version": {
+          "const": "alpr-manifest-v1"
+        },
+        "status": {
+          "enum": [
+            "TEMPLATE_NOT_A_RELEASE",
+            "READY"
+          ]
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "dataset_version": {
+          "const": "CCPD2019"
+        },
+        "upstream_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "upstream_commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "archive_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "archive_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "license_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Artifact"
+          },
+          "minItems": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "READY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "archive_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "created_at": {
+                "type": "string",
+                "minLength": 1
+              },
+              "upstream_commit": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "archive_url": {
+                "type": "string",
+                "minLength": 1
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Artifact"
+                },
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "DataManifest": {
+      "type": "object",
+      "description": "Final data inventory after QA; no self-hash. READY requires actual counts/inventory.",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "manifest_version",
+        "status",
+        "created_at",
+        "data_version",
+        "source_manifest_sha256",
+        "split_manifest_sha256",
+        "charset_sha256",
+        "parser_version",
+        "inventory",
+        "counts"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "alpr-contract-v1"
+        },
+        "manifest_version": {
+          "const": "alpr-manifest-v1"
+        },
+        "status": {
+          "enum": [
+            "TEMPLATE_NOT_A_RELEASE",
+            "READY"
+          ]
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "data_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "split_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "charset_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parser_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inventory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Artifact"
+          },
+          "minItems": 0
+        },
+        "counts": {
+          "type": "object",
+          "description": "Null in templates; actual integer counts for READY.",
+          "additionalProperties": false,
+          "required": [
+            "train",
+            "dev",
+            "test",
+            "quarantine"
+          ],
+          "properties": {
+            "train": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "dev": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "test": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "quarantine": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "READY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "source_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "split_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "charset_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "created_at": {
+                "type": "string",
+                "minLength": 1
+              },
+              "inventory": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Artifact"
+                },
+                "minItems": 1
+              },
+              "counts": {
+                "type": "object",
+                "description": "Actual counts.",
+                "additionalProperties": false,
+                "required": [
+                  "train",
+                  "dev",
+                  "test",
+                  "quarantine"
+                ],
+                "properties": {
+                  "train": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "dev": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "test": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "quarantine": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ModelManifest": {
+      "type": "object",
+      "description": "READY recognizer must bind charset/decoder and expected input shape through config.",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "manifest_version",
+        "status",
+        "created_at",
+        "model_kind",
+        "architecture",
+        "framework_version",
+        "checkpoint_sha256",
+        "data_manifest_sha256",
+        "split_manifest_sha256",
+        "config_sha256",
+        "charset_sha256",
+        "preprocess_version",
+        "decoder_version",
+        "artifacts"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "alpr-contract-v1"
+        },
+        "manifest_version": {
+          "const": "alpr-manifest-v1"
+        },
+        "status": {
+          "enum": [
+            "TEMPLATE_NOT_A_RELEASE",
+            "READY"
+          ]
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "model_kind": {
+          "enum": [
+            "detector",
+            "recognizer"
+          ]
+        },
+        "architecture": {
+          "type": "string",
+          "minLength": 1
+        },
+        "framework_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "checkpoint_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "data_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "split_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "config_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "charset_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "preprocess_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decoder_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Artifact"
+          },
+          "minItems": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "READY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "checkpoint_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "data_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "split_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "created_at": {
+                "type": "string",
+                "minLength": 1
+              },
+              "framework_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "artifacts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Artifact"
+                },
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "READY"
+              },
+              "model_kind": {
+                "const": "recognizer"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "charset_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "decoder_version": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "RunManifest": {
+      "type": "object",
+      "description": "READY requires IDs, hashes, command, environment and evidence; metrics may be null only when explicitly unmeasured.",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "manifest_version",
+        "status",
+        "created_at",
+        "run_id",
+        "git_commit",
+        "seed",
+        "mode",
+        "source_manifest_sha256",
+        "data_manifest_sha256",
+        "split_manifest_sha256",
+        "config_sha256",
+        "charset_sha256",
+        "detector_checkpoint_sha256",
+        "recognizer_checkpoint_sha256",
+        "hardware",
+        "environment_lock_sha256",
+        "commands",
+        "test_exposure",
+        "metrics",
+        "artifacts",
+        "stage"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "alpr-contract-v1"
+        },
+        "manifest_version": {
+          "const": "alpr-manifest-v1"
+        },
+        "status": {
+          "enum": [
+            "TEMPLATE_NOT_A_RELEASE",
+            "READY"
+          ]
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "git_commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "seed": {
+          "const": 42
+        },
+        "mode": {
+          "enum": [
+            "train",
+            "dev",
+            "test",
+            "latency"
+          ]
+        },
+        "source_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "data_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "split_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "config_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "charset_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "detector_checkpoint_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recognizer_checkpoint_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hardware": {
+          "type": "object",
+          "description": "Actual measured environment, no assumed GPU as observation.",
+          "additionalProperties": false,
+          "required": [
+            "cpu",
+            "gpu",
+            "gpu_vram_bytes",
+            "ram_bytes",
+            "cuda",
+            "driver"
+          ],
+          "properties": {
+            "cpu": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "gpu": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "gpu_vram_bytes": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ram_bytes": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "cuda": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "driver": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            }
+          }
+        },
+        "environment_lock_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "test_exposure": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Artifact"
+          },
+          "minItems": 0
+        },
+        "stage": {
+          "enum": [
+            "data",
+            "detector",
+            "recognizer",
+            "pipeline"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "READY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "source_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "data_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "split_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "charset_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "environment_lock_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "created_at": {
+                "type": "string",
+                "minLength": 1
+              },
+              "run_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "git_commit": {
+                "type": "string",
+                "minLength": 1
+              },
+              "commands": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "artifacts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Artifact"
+                },
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "READY"
+              },
+              "stage": {
+                "const": "detector"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "detector_checkpoint_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "READY"
+              },
+              "stage": {
+                "const": "recognizer"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "recognizer_checkpoint_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "READY"
+              },
+              "stage": {
+                "const": "pipeline"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "detector_checkpoint_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "recognizer_checkpoint_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ReleaseManifest": {
+      "type": "object",
+      "description": "Separate runtime allowlist from train/eval gold; hash DAG, no self reference.",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "manifest_version",
+        "status",
+        "created_at",
+        "release_id",
+        "git_commit",
+        "protocol_version",
+        "frozen_run_manifest_sha256",
+        "source_manifest_sha256",
+        "data_manifest_sha256",
+        "split_manifest_sha256",
+        "config_sha256",
+        "charset_sha256",
+        "detector_checkpoint_sha256",
+        "recognizer_checkpoint_sha256",
+        "runtime_inventory",
+        "evaluation_inventory",
+        "gate_decisions"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "alpr-contract-v1"
+        },
+        "manifest_version": {
+          "const": "alpr-manifest-v1"
+        },
+        "status": {
+          "enum": [
+            "TEMPLATE_NOT_A_RELEASE",
+            "READY"
+          ]
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "release_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "git_commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "protocol_version": {
+          "const": "alpr-custom-base-group-v1"
+        },
+        "frozen_run_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "data_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "split_manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "config_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "charset_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "detector_checkpoint_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recognizer_checkpoint_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runtime_inventory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Artifact"
+          },
+          "minItems": 0
+        },
+        "evaluation_inventory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Artifact"
+          },
+          "minItems": 0
+        },
+        "gate_decisions": {
+          "type": "object",
+          "description": "Actual gate evidence; template has no PASS.",
+          "additionalProperties": false,
+          "required": [
+            "G1",
+            "G2",
+            "G3",
+            "G4"
+          ],
+          "properties": {
+            "G1": {
+              "enum": [
+                "CHƯA ĐO",
+                "PASS",
+                "FAIL"
+              ]
+            },
+            "G2": {
+              "enum": [
+                "CHƯA ĐO",
+                "PASS",
+                "FAIL"
+              ]
+            },
+            "G3": {
+              "enum": [
+                "CHƯA ĐO",
+                "PASS",
+                "FAIL"
+              ]
+            },
+            "G4": {
+              "enum": [
+                "CHƯA ĐO",
+                "PASS",
+                "FAIL"
+              ]
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "READY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "frozen_run_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "source_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "data_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "split_manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "charset_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "detector_checkpoint_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "recognizer_checkpoint_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "created_at": {
+                "type": "string",
+                "minLength": 1
+              },
+              "release_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "git_commit": {
+                "type": "string",
+                "minLength": 1
+              },
+              "runtime_inventory": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Artifact"
+                },
+                "minItems": 1
+              },
+              "evaluation_inventory": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Artifact"
+                },
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "x-contract-version": "alpr-contract-v1",
+  "x-owners": {
+    "Sample": "A",
+    "Annotation": "A",
+    "SplitManifest": "A",
+    "DetectorLabel": "A",
+    "OCRCrop": "A/B",
+    "Charset": "A",
+    "DetectionPrediction": "B",
+    "OCRPrediction": "C",
+    "PipelineResult": "C",
+    "SourceManifest": "A",
+    "DataManifest": "A",
+    "ModelManifest": "B/C",
+    "RunManifest": "A/B/C/D",
+    "ReleaseManifest": "D"
+  },
+  "x-annotation-mapping": {
+    "source": "https://github.com/detectRecog/CCPD#dataset-annotations",
+    "provinces": [
+      "皖",
+      "沪",
+      "津",
+      "渝",
+      "冀",
+      "晋",
+      "蒙",
+      "辽",
+      "吉",
+      "黑",
+      "苏",
+      "浙",
+      "京",
+      "闽",
+      "赣",
+      "鲁",
+      "豫",
+      "鄂",
+      "湘",
+      "粤",
+      "桂",
+      "琼",
+      "川",
+      "贵",
+      "云",
+      "藏",
+      "陕",
+      "甘",
+      "青",
+      "宁",
+      "新",
+      "警",
+      "学",
+      "O"
+    ],
+    "alphabets": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "O"
+    ],
+    "ads": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "O"
+    ],
+    "sentinel": "O",
+    "sentinel_policy": "QUARANTINE_NOT_CTC_BLANK"
+  },
+  "x-ctc": {
+    "input_shape": "N,1,32,160",
+    "input_range": "float32 [-1,1]",
+    "time_steps": 40,
+    "blank_index": 0,
+    "num_classes": 68,
+    "charset_sha256": "b4ee9b5d9ca6e9082056a4ba7d22f4a29f3fa806d17b2a7a7e79a4f85a0f9dbe",
+    "alignment": "T >= L + adjacent_repeat_count",
+    "decode_order": [
+      "argmax",
+      "collapse_consecutive_repeats",
+      "remove_blank"
+    ]
+  },
+  "x-invariants": [
+    "sample_id=image_id is opaque and unique; runtime path basename contains no annotation.",
+    "BBox 0<=x1<x2<=W, 0<=y1<y2<=H, xyxy float pixel half-open; corners in declared RB/LB/LT/RT order.",
+    "All sample IDs, pixel hashes, dedup groups and normalized plate texts disjoint across splits.",
+    "Split first, crops/augmentation inherit parent split; crop.sample_id resolves one parent.",
+    "RuntimeImage/RuntimeCrop only pixels and opaque IDs. Training labels are allowed; test gold stays evaluator-only.",
+    "Unicode NFC only. Sentinel O is rejected, blank0 is never a target; charset/version/hash must match output head.",
+    "CTC T=40; target lengths 7 baseline (8 extension); T>=L+adjacent repeats; padded time input_lengths=40.",
+    "No GT corners in deployed pipeline. Oracle crops labeled separately and excluded headline E2E.",
+    "Pipeline failures have empty text; no_detection/low_confidence selected_detection=null and ocr=null.",
+    "READY artifacts reject missing/mismatched schema, split/data/config/charset/checkpoint hash or architecture/shape/decoder.",
+    "SHA256 exact file bytes; set hashes canonical sorted JSON UTF8 compact LF; manifests form acyclic graph.",
+    "Manifest TEMPLATE_NOT_A_RELEASE permits null; loader must reject templates. Actual READY inventory cannot be empty."
+  ]
+}

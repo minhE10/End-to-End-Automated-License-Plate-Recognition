@@ -1,0 +1,17 @@
+{
+  "contract_version": "alpr-contract-v1",
+  "manifest_version": "alpr-manifest-v1",
+  "status": "TEMPLATE_NOT_A_RELEASE",
+  "created_at": null,
+  "model_kind": "recognizer",
+  "architecture": "crnn-small-v1",
+  "framework_version": null,
+  "checkpoint_sha256": null,
+  "data_manifest_sha256": null,
+  "split_manifest_sha256": null,
+  "config_sha256": null,
+  "charset_sha256": null,
+  "preprocess_version": "gray-aspect-pad-v1",
+  "decoder_version": "greedy-ctc-v1",
+  "artifacts": []
+}

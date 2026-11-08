@@ -1,0 +1,13 @@
+{
+  "contract_version": "alpr-contract-v1",
+  "manifest_version": "alpr-manifest-v1",
+  "status": "TEMPLATE_NOT_A_RELEASE",
+  "created_at": null,
+  "dataset_version": "CCPD2019",
+  "upstream_url": "https://github.com/detectRecog/CCPD",
+  "upstream_commit": null,
+  "archive_url": null,
+  "archive_sha256": null,
+  "license_reference": "https://github.com/detectRecog/CCPD/blob/master/LICENSE",
+  "files": []
+}

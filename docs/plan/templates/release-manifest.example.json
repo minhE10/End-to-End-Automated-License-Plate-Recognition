@@ -1,0 +1,25 @@
+{
+  "contract_version": "alpr-contract-v1",
+  "manifest_version": "alpr-manifest-v1",
+  "status": "TEMPLATE_NOT_A_RELEASE",
+  "created_at": null,
+  "release_id": null,
+  "git_commit": null,
+  "protocol_version": "alpr-custom-base-group-v1",
+  "frozen_run_manifest_sha256": null,
+  "source_manifest_sha256": null,
+  "data_manifest_sha256": null,
+  "split_manifest_sha256": null,
+  "config_sha256": null,
+  "charset_sha256": null,
+  "detector_checkpoint_sha256": null,
+  "recognizer_checkpoint_sha256": null,
+  "runtime_inventory": [],
+  "evaluation_inventory": [],
+  "gate_decisions": {
+    "G1": "CHƯA ĐO",
+    "G2": "CHƯA ĐO",
+    "G3": "CHƯA ĐO",
+    "G4": "CHƯA ĐO"
+  }
+}

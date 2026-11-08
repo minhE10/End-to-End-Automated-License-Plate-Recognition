@@ -1,0 +1,18 @@
+{
+  "contract_version": "alpr-contract-v1",
+  "manifest_version": "alpr-manifest-v1",
+  "status": "TEMPLATE_NOT_A_RELEASE",
+  "created_at": null,
+  "data_version": "alpr-data-v1",
+  "source_manifest_sha256": null,
+  "split_manifest_sha256": null,
+  "charset_sha256": null,
+  "parser_version": "ccpd-parser-v1",
+  "inventory": [],
+  "counts": {
+    "train": null,
+    "dev": null,
+    "test": null,
+    "quarantine": null
+  }
+}

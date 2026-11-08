@@ -1,0 +1,34 @@
+{
+  "contract_version": "alpr-contract-v1",
+  "manifest_version": "alpr-manifest-v1",
+  "status": "TEMPLATE_NOT_A_RELEASE",
+  "created_at": null,
+  "run_id": null,
+  "git_commit": null,
+  "seed": 42,
+  "mode": "dev",
+  "source_manifest_sha256": null,
+  "data_manifest_sha256": null,
+  "split_manifest_sha256": null,
+  "config_sha256": null,
+  "charset_sha256": null,
+  "detector_checkpoint_sha256": null,
+  "recognizer_checkpoint_sha256": null,
+  "hardware": {
+    "cpu": null,
+    "gpu": null,
+    "gpu_vram_bytes": null,
+    "ram_bytes": null,
+    "cuda": null,
+    "driver": null
+  },
+  "environment_lock_sha256": null,
+  "commands": [],
+  "test_exposure": [],
+  "metrics": {
+    "cer_micro": null,
+    "end_to_end_accuracy": null
+  },
+  "artifacts": [],
+  "stage": "pipeline"
+}

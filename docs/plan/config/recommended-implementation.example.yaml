@@ -1,0 +1,90 @@
+# ĐỀ XUẤT; không phải config của run đã chạy. Freeze bản riêng sau pilot dev.
+plan_version: alpr-plan-v1
+contract_version: alpr-contract-v1
+protocol_version: alpr-custom-base-group-v1
+status: PLANNING_ONLY
+seed: 42
+data:
+  dataset_version: CCPD2019
+  subsets: [ccpd_base]
+  target: {train: 20000, dev: 2000, test: 2000}
+  minimum: {train: 5000, dev: 500, test: 500}
+  group_by: [pixel_hash, confirmed_near_duplicate, plate_text_nfc]
+  phash_bits: 64
+  phash_candidate_hamming: 4
+  split_before_crop: true
+  raw_root: data/raw
+  runtime_root: data/processed/images
+  test_gold_runtime_access: false
+detector:
+  architecture: yolov8n
+  ultralytics_version: 8.3.0
+  init_weights: yolov8n.pt
+  init_weights_sha256: null
+  image_size: 640
+  batch_size: 16
+  epochs_max: 30
+  patience: 5
+  horizontal_flip_probability: 0.0
+  vertical_flip_probability: 0.0
+  class_names: [plate]
+  runtime_confidence: 0.25
+  nms_iou: 0.50
+  ap_confidence: 0.001
+  ap_max_detections: 100
+  select: top1_confidence_then_bbox_lexicographic
+crop:
+  rectification: none
+  bbox_margin_fraction: 0.0
+  rounding: floor_lt_ceil_rb_clamp
+recognizer:
+  architecture: crnn-small-v1
+  components: [CNN, BiLSTM, CTCLoss]
+  input_shape: [1, 32, 160]
+  keep_aspect_until_max_width: true
+  padding_right_uint8: 127
+  normalization: divide_127.5_subtract_1
+  output_timesteps: 40
+  input_lengths_policy: all_40_including_padding
+  lstm_layers: 2
+  lstm_hidden_each_direction: 128
+  num_classes: 68
+  blank_index: 0
+  charset_version: ccpd67-v1
+  charset_tokens_sha256: b4ee9b5d9ca6e9082056a4ba7d22f4a29f3fa806d17b2a7a7e79a4f85a0f9dbe
+  unicode_normalization: NFC
+  allowed_lengths: [7]
+  decoder: greedy-ctc-v1
+  zero_infinity: false
+  batch_size: 64
+  optimizer: Adam
+  learning_rate: 0.001
+  epochs_max: 40
+  patience: 5
+  amp: false
+experiments:
+  max_preprocessing_configs: 2
+  baseline: grayscale
+  candidate: clahe_clip2_tile8x8
+  choose_using: dev_only
+  beam_search: false
+evaluation:
+  cer: micro_levenshtein_nfc_only
+  primary_e2e: full_split_top1_exact_text
+  detection_match_iou: 0.50
+  ap_iou_thresholds: [0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+  predicted_crop_condition: top1_iou_ge_0.50_and_crop_valid
+  misses_as_empty_for_pipeline_cer: true
+  include_failed_images: true
+  latency_warmup: 20
+  latency_runs: 200
+  latency_batch_size: 1
+  latency_split: dev
+  cuda_synchronize: true
+resources:
+  gpu_status: UNVERIFIED
+  assumed_vram_gib: 8
+  assumed_ram_gib: 16
+  detector_gpu_hours_cap: 12
+  recognizer_and_ablation_gpu_hours_cap: 16
+  disk_headroom_gib: 8

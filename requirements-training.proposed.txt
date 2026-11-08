@@ -1,0 +1,9 @@
+# ĐỀ XUẤT, CHƯA CÀI/KIỂM; Python 3.11. B phải khóa lockfile/platform/CUDA sau smoke.
+# Chọn wheel torch/torchvision theo GPU thực tế; không cài trong môi trường docs Python 3.14.
+torch==2.5.1
+torchvision==0.20.1
+ultralytics==8.3.0
+numpy==1.26.4
+opencv-python==4.10.0.84
+Pillow==10.4.0
+PyYAML==6.0.3

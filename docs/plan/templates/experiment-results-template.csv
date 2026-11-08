@@ -1,0 +1,6 @@
+experiment_id,split,mode,preprocessing,n_images,n_gt_chars,coverage,cer_micro,exact_accuracy,e2e_accuracy,checkpoint_sha256,config_sha256,status
+baseline_gt,dev,ocr_gt_bbox,grayscale,null,null,null,null,null,null,,,CHƯA ĐO
+baseline_pred,dev,ocr_pred_matched,grayscale,null,null,null,null,null,null,,,CHƯA ĐO
+baseline_pipeline,dev,pipeline_all,grayscale,null,null,null,null,null,null,,,CHƯA ĐO
+clahe_pipeline,dev,pipeline_all,clahe_clip2_tile8x8,null,null,null,null,null,null,,,CHƯA ĐO
+final_pipeline,test,pipeline_all,FROZEN_FROM_DEV,null,null,null,null,null,null,,,CHƯA ĐO

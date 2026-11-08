@@ -1,0 +1,4 @@
+# Chỉ công cụ kế hoạch; các phiên bản này đã hiện diện khi tạo repo.
+PyYAML==6.0.3
+jsonschema==4.26.0
+reportlab==5.0.1

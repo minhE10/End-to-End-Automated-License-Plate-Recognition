@@ -1,0 +1,32 @@
+id,owner,week,task,hours,kind,gate,status
+A01,A,1,"Nguồn, dung lượng, protocol và quyền truy cập",2,SUGGESTED,G1,CHƯA THỰC HIỆN
+A02,A,1,"Parser filename, mapping, quarantine và fixture",6,SUGGESTED,G1,CHƯA THỰC HIỆN
+A03,A,1,"Dedup, group split và anti-leak inventory",7,SUGGESTED,G1,CHƯA THỰC HIỆN
+A04,A,1,"Crop/preprocess, charset và CTC shape contract",6,SUGGESTED,G1,CHƯA THỰC HIỆN
+A05,A,1,"Metric chung, QA100 và acceptance suite",7,SUGGESTED,G1,CHƯA THỰC HIỆN
+A06,A,1,"Manifest, sample offline, báo cáo và bàn giao",6,SUGGESTED,G1,CHƯA THỰC HIỆN
+AR,A,1,Dự phòng; không tự động thêm việc mở rộng,6,RESERVE,G1,CHƯA SỬ DỤNG
+B01,B,2,Kiểm nhận A trong hai giờ đầu,2,SUGGESTED,G2,CHƯA THỰC HIỆN
+B02,B,2,"Môi trường GPU, smoke và YOLO adapter",4,SUGGESTED,G2,CHƯA THỰC HIỆN
+B03,B,2,Pilot và chọn budget huấn luyện trên dev,6,SUGGESTED,G2,CHƯA THỰC HIỆN
+B04,B,2,"Điều phối baseline train, checkpoint và resume",5,SUGGESTED,G2,CHƯA THỰC HIỆN
+B05,B,2,"Detection evaluation, P/R/AP và failure cases",7,SUGGESTED,G2,CHƯA THỰC HIỆN
+B06,B,2,Export predicted dev crops và test adapter,4,SUGGESTED,G2,CHƯA THỰC HIỆN
+B07,B,2,"Khóa artifact, báo cáo và bàn giao C",6,SUGGESTED,G2,CHƯA THỰC HIỆN
+BR,B,2,Dự phòng; không tự động thêm việc mở rộng,6,RESERVE,G2,CHƯA SỬ DỤNG
+C01,C,3,"Kiểm nhận detector, charset và data hash",2,SUGGESTED,G3,CHƯA THỰC HIỆN
+C02,C,3,"CNN, BiLSTM, CTC trainer và greedy decoder",8,SUGGESTED,G3,CHƯA THỰC HIỆN
+C03,C,3,Ghép predict() và trạng thái lỗi từ đầu tuần,4,SUGGESTED,G3,CHƯA THỰC HIỆN
+C04,C,3,Pilot/huấn luyện và OCR dev GT/predicted,7,SUGGESTED,G3,CHƯA THỰC HIỆN
+C05,C,3,Hai cấu hình preprocessing và lỗi detector/OCR,5,SUGGESTED,G3,CHƯA THỰC HIỆN
+C06,C,3,"Freeze checkpoint/config, evaluator và anti-leak",4,SUGGESTED,G3,CHƯA THỰC HIỆN
+C07,C,3,"Smoke offline, báo cáo và bàn giao pipeline D",4,SUGGESTED,G3,CHƯA THỰC HIỆN
+CR,C,3,Dự phòng; không tự động thêm việc mở rộng,6,RESERVE,G3,CHƯA SỬ DỤNG
+D01,D,4,Kiểm nhận pipeline đã ghép và frozen manifest,2,SUGGESTED,G4,CHƯA THỰC HIỆN
+D02,D,4,"Demo ảnh đơn và batch, xử lý lỗi",6,SUGGESTED,G4,CHƯA THỰC HIỆN
+D03,D,4,Test cuối từ frozen artifacts và per-image metrics,6,SUGGESTED,G4,CHƯA THỰC HIỆN
+D04,D,4,"Latency, resource và clean-machine reproduction",5,SUGGESTED,G4,CHƯA THỰC HIỆN
+D05,D,4,"Strata, ablation và audit lỗi",5,SUGGESTED,G4,CHƯA THỰC HIỆN
+D06,D,4,"Báo cáo, slide và kịch bản demo",6,SUGGESTED,G4,CHƯA THỰC HIỆN
+D07,D,4,"Release manifest, README và gói nộp",4,SUGGESTED,G4,CHƯA THỰC HIỆN
+DR,D,4,Dự phòng; không tự động thêm việc mở rộng,6,RESERVE,G4,CHƯA SỬ DỤNG
